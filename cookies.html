@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <script>
+            // Simple function to set a cookie
+            function setCookie(name, value, daysToExpire) {
+                let expires = "";
+                if (daysToExpire) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (daysToExpire * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + value + expires + "; path=/";
+            }
+
+            // Here's our dummy OAuth Token Request
+            fetch('oauth/dummy-token.json')
+            .then(response => {
+                return response.json(); // Parse the JSON data
+            })
+            .then(data => {
+                // Here's where we set the Cookie for subsequent auth requests to our resource server
+                setCookie("AUTH_COOKIE", data.accessToken, 1);
+            });
+
+            // Here's the function that is going to cop an XSS attack
+            function displayInput() {
+                const divToDisplay = document.getElementById("toExploit");
+                const inputField = document.getElementById("myInput");
+                divToDisplay.innerHTML = inputField.value;
+                console.log(divToDisplay.innerHTML);
+            }
+        </script>
+    </head>
+    <body>
+        <div id="toExploit">
+            <p>Paste the below XSS text into the field and hit 'Display Input' button</p>
+            <p>
+                &lt;img src=&#39;bad.gif&#39; onerror=&#39;alert(&quot;Got your cookies: &quot; + document.cookie)&#39; /&gt;
+            </p>
+        </div>
+
+        <input type="text" id="myInput" style="width: 500px;" value="" />
+        <button onclick="displayInput()">Display Input</button>
+    </body>
+</html>
